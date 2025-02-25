@@ -59,7 +59,7 @@ while True:
         prediction = get_model_prediction(roi_color)
         if prediction is not None:
             print(f"Prediction: {prediction}")
-            if prediction < 1:  
+            if prediction < 0.5:  
                 sound.play()
             else:
                 sound.stop() 
