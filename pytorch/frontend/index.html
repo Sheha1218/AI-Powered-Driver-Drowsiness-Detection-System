@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Drowsiness Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .video-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            animation: fadeInLeft 0.8s ease;
+        }
+
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        #video-feed {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .status-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            animation: fadeInRight 0.8s ease;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .status-card h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .status-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .alert-status {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .alert-normal {
+            border-left: 5px solid #10b981;
+        }
+
+        .alert-warning {
+            border-left: 5px solid #f59e0b;
+            animation: pulse 2s infinite;
+        }
+
+        .alert-danger {
+            border-left: 5px solid #ef4444;
+            animation: alertBlink 1s infinite;
+        }
+
+        .status-indicator {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+
+        .indicator-safe {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+        }
+
+        .indicator-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+        }
+
+        .indicator-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes alertBlink {
+            0%, 50%, 100% {
+                opacity: 1;
+            }
+            25%, 75% {
+                opacity: 0.5;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚗 Driver Drowsiness Detection System</h1>
+            <p class="subtitle">AI-Powered Real-Time Safety Monitoring</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="video-section">
+                <div class="video-container">
+                    <img id="video-feed" src="/video" alt="Video Feed">
+                </div>
+            </div>
+
+            <div class="status-panel">
+                <div class="status-card">
+                    <h3>Driver Status</h3>
+                    <div class="status-value" id="driver-status">Alert</div>
+                    <div class="status-label">Current State</div>
+                </div>
+
+                <div class="status-card">
+                    <h3>Eye Aspect Ratio</h3>
+                    <div class="status-value" id="ear-value">0.25</div>
+                    <div class="status-label">EAR Threshold: 0.20</div>
+                </div>
+
+                <div class="alert-status alert-normal" id="alert-panel">
+                    <div class="status-indicator indicator-safe">
+                        ✓
+                    </div>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 5px;">System Status</h3>
+                    <p id="alert-message">All Systems Normal</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-icon">👁️</div>
+                <div class="stat-number" id="detection-count">0</div>
+                <div class="stat-label">Detections</div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-number" id="alert-count">0</div>
+                <div class="stat-label">Alerts Triggered</div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-number" id="session-time">00:00</div>
+                <div class="stat-label">Session Duration</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let detectionCount = 0;
+        let alertCount = 0;
+        let sessionStart = Date.now();
+
+        function updateSessionTime() {
+            const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('session-time').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function simulateUpdates() {
+            const earValue = (Math.random() * 0.15 + 0.15).toFixed(2);
+            document.getElementById('ear-value').textContent = earValue;
+
+            const isDrowsy = earValue < 0.22;
+            
+            if (isDrowsy) {
+                document.getElementById('driver-status').textContent = 'Drowsy';
+                document.getElementById('alert-panel').className = 'alert-status alert-danger';
+                document.querySelector('.status-indicator').className = 'status-indicator indicator-danger';
+                document.querySelector('.status-indicator').textContent = '!';
+                document.getElementById('alert-message').textContent = 'DROWSINESS DETECTED!';
+                alertCount++;
+                document.getElementById('alert-count').textContent = alertCount;
+            } else {
+                document.getElementById('driver-status').textContent = 'Alert';
+                document.getElementById('alert-panel').className = 'alert-status alert-normal';
+                document.querySelector('.status-indicator').className = 'status-indicator indicator-safe';
+                document.querySelector('.status-indicator').textContent = '✓';
+                document.getElementById('alert-message').textContent = 'All Systems Normal';
+            }
+
+            detectionCount++;
+            document.getElementById('detection-count').textContent = detectionCount;
+        }
+
+        setInterval(updateSessionTime, 1000);
+        setInterval(simulateUpdates, 2000);
+    </script>
+</body>
+</html>
