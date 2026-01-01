@@ -1,5 +1,5 @@
 import torch
-from pytorch.pipeline import neuralnet
+from pipeline import neuralnet
 
 
 
@@ -7,8 +7,7 @@ class detect:
     def __init__(self,model_path, class_names):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
-        self.model = neuralnet()
-        self.model=self.model.to(self.device)
+        self.model = neuralnet().to(self.device)
         self.model.load_state_dict(torch.load(model_path,map_location=self.device))
         self.model.eval()
         
@@ -19,7 +18,7 @@ class detect:
     
         with torch.no_grad():
             output =self.model(input_tensor)
-            probs = torch.sigmoid(output)
+            probs = torch.softmax(output,dim=1)
             class_id =torch.argmax(probs,dim=1).item()
             confidence = probs[0,class_id].item()
             
