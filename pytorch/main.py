@@ -34,7 +34,7 @@ def play_alert():
 
 classifier = detect(
     model_path=r"pytorch\driver.pth",
-    class_names=['Open_Eyes','Closed_Eyes']
+    class_names=['Closed_Eyes','Open_Eyes']
 )
 
 if not hasattr(classifier, "model"):
@@ -90,7 +90,7 @@ while True:
                 print("Prediction failed:", e)
                 continue
 
-            color = (0,0,255) if label == "Open_Eyes" else (0,255,0)
+            color = (0,0,255) if label == "Closed_Eyes" else (0,255,0)
 
             cv2.rectangle(
                 roi_color,
@@ -109,10 +109,10 @@ while True:
                 1
             )
 
-            if label == "Open_Eyes":
-                closed_frames +=0
+            if label == "Closed_Eyes":
+                closed_frames +=1
             else:
-                closed_frames=1
+                closed_frames=0
 
             if closed_frames >= drowsy_threshold:
                 cv2.putText(
